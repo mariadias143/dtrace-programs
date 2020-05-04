@@ -9,7 +9,7 @@ syscall::openat*:entry
 {
 	self->creat = 0;
 	self->flag = arg2;
-    	@tryOpen[pid,execname,copyinstr(arg1),arg2] = count();
+    @tryOpen[pid,execname] = count();
 }
 
 syscall::openat*:entry
@@ -17,29 +17,29 @@ syscall::openat*:entry
 {
 	self->creat = 1;
 	self->flag = arg2;
-    	@tryCreat[pid,execname,copyinstr(arg1),arg2] = count();
+    @tryCreat[pid,execname] = count();
 }
 
 syscall::openat*:return
-/(int)arg1 >= 0 && self->creat == 0/
+/arg1 >= 0 && self->creat == 0/
 {
 	@successOpen[pid,execname] = count();
 }
 
 syscall::openat*:return
-/(int)arg1 >= 0 && self->creat == 1/
+/arg1 >= 0 && self->creat == 1/
 {
 	@successCreat[pid,execname] = count();
 }
 
 END
 {
-	printf("Tentativas de abrir ficheiros: (pid - processo - file - modo - count)\n");
+	printf("Tentativas de abrir ficheiros:\n");
 	printa(@tryOpen);
-	printf("\nTentativas bem sucedidas: (pid - processo - count)\n");
+	printf("\nTentativas bem sucedidas:\n");
 	printa(@successOpen);
-	printf("\nTentativas de criar ficheiros (pid - processo - file - modo - count):\n");
+	printf("\nTentativas de criar ficheiros:\n");
 	printa(@tryCreat);
-	printf("\nTentativas bem sucedidas (pid - processo - count):\n");
+	printf("\nTentativas bem sucedidas:\n");
 	printa(@successCreat);
 }
