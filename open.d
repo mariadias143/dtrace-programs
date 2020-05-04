@@ -1,17 +1,26 @@
+#!/usr/sbin/dtrace -s
+
+#pragma D option quiet
+
+/* Exercicio 1 - Monitorizar chamadas ao sistema open() */
+
 BEGIN
 {
-	printf("%-6s %-20s %-6s %-6s %-64s %-16s %s\n","PID","PROCESS","UID","GID","FILENAME","MODE","RETURN");
+	printf("%-6s %-16s %-6s %-6s %-64s %-20s %s\n","PID","PROCESS","UID","GID","FILENAME","MODE","RETURN");
 }
 
-syscall::openat:entry
+syscall::openat*:entry
 {
 	self->path = arg1;
     	self->flag = arg2;
 }
 
-syscall::openat:return
+syscall::openat*:return
 /"/etc" == stringof(copyin(self->path,4)) && pid != $pid && self->path != NULL /
 {
-	printf("%-6d %-20s %-6d %-6d %-64s %-16x %d\n", pid, execname, uid, gid, copyinstr(self->path), self->flag, arg0);
+	printf("%-6d %-16s %-6d %-6d %-64s %-8s", pid, execname, uid, gid, copyinstr(self->path), (self->path&O_WRONLY) ? "O_WRONLY" : (self->path&O_RDWR) ? "O_RDWR" : "O_RDONLY");
+	printf("%-8s", self->flag&O_CREAT ? " | O_CREAT" : "");
+	printf("%-8s", self->flag&O_APPEND ? " | O_APPEND" : "");
+	printf("%d\n",arg1);
     
 }
