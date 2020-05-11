@@ -8,7 +8,6 @@ syscall::openat*:entry
 /(arg2&O_CREAT) == 0/
 {
 	self->creat = 0;
-	self->flag = arg2;
     @tryOpen[pid,execname] = count();
 }
 
@@ -16,7 +15,6 @@ syscall::openat*:entry
 /(arg2&O_CREAT) == O_CREAT/
 {
 	self->creat = 1;
-	self->flag = arg2;
     @tryCreat[pid,execname] = count();
 }
 
@@ -34,17 +32,11 @@ syscall::openat*:return
 
 tick-$1sec
 {
-    printf("*******************************************************************************\n");
-    printf("%-20Y\n\n", walltimestamp);
-    printf("Tentativas de abrir ficheiros:\n");
-	printa(@tryOpen);
-	printf("\nTentativas bem sucedidas:\n");
-	printa(@successOpen);
-	printf("\nTentativas de criar ficheiros:\n");
-	printa(@tryCreat);
-	printf("\nTentativas bem sucedidas:\n");
-	printa(@successCreat);
-    printf("*******************************************************************************\n");
+    printf("%-20Y\n", walltimestamp);
+    printf("PID        EXECNAME							#OPEN_TRY    #OPEN_SUCCESS      #CREAT_TRY    #CREAT_SUCCESS\n");
+	printf("- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - ");
+	printa(@tryOpen,@successOpen,@tryCreat,@successCreat);
+	printf("\n\n");
     clear(@tryOpen);
     clear(@successOpen);
     clear(@tryCreat);
