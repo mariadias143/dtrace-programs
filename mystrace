@@ -1,0 +1,3 @@
+#! /bin/sh
+
+dtrace -q -s syscall.d -c $1
